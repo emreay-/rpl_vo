@@ -1,0 +1,33 @@
+<launch>
+
+<arg name="tilted_only" default="false"/>
+<arg name="down_only" default="false"/>
+<arg name="both" default="false"/>
+<arg name="imu_only" default="false"/>
+<arg name="imu_and_tilt" default="false"/>
+<arg name="imu_and_down" default="false"/>
+<arg name="full" default="false"/>
+
+<include file="$(find rpl_vo)/launch/camera_down.launch" if="$(arg imu_and_down)" />
+<include file="$(find rpl_vo)/launch/camera_tilted.launch" if="$(arg imu_and_tilt)" />
+<include file="$(find rpl_vo)/launch/rgb8.launch" if="$(arg full)" />
+<include file="$(find mocap_optitrack)/launch/mocap.launch" />
+
+
+
+<node pkg="rosbag" type="record" name="record" args="-o /home/rpl/ /camera_tilted/image_raw /tf" if="$(arg tilted_only)" output="screen" />
+
+<node pkg="rosbag" type="record" name="record" args="-o /home/rpl/ /camera_down/image_raw /tf" if="$(arg down_only)" output="screen" />
+
+<node pkg="rosbag" type="record" name="record" args="-o /home/rpl/ /camera_down/image_raw /camera_tilted/image_raw /tf" if="$(arg both)" output="screen" />
+
+<node pkg="rosbag" type="record" name="record" args="-o /home/rpl/ /mavros/imu/data /mavros/imu/data_raw /tf" if="$(arg imu_only)" output="screen" />
+
+<node pkg="rosbag" type="record" name="record" args="-o /home/rpl/ /camera_tilted/image_raw /mavros/imu/data /mavros/imu/data_raw /mavros/mocap/pose /tf" if="$(arg imu_and_tilt)" output="screen" />
+
+<node pkg="rosbag" type="record" name="record" args="-o /home/rpl/ /camera_down/image_raw /mavros/imu/data /mavros/imu/data_raw /mavros/mocap/pose /tf" if="$(arg imu_and_down)" output="screen" />
+
+<node pkg="rosbag" type="record" name="record" args="-o /home/rpl/ /camera_down/image_raw /camera_tilted/image_raw /mavros/imu/data /mavros/imu/data_raw /mavros/mocap/pose /tf" if="$(arg full)" output="screen" />
+
+
+</launch>
