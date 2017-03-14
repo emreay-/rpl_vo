@@ -1,0 +1,6 @@
+<launch>
+
+  <env name="ROSCONSOLE_CONFIG_FILE" value="$(find rplvo_launch)/rosconsole.config"/>
+  <node pkg="rplvo_mono" type="feature_extract" name="mono_odometer" output="screen"/>
+
+</launch>
