@@ -23,4 +23,12 @@ Monocular VO package. Parameters;
 * cam_d2 (default 0.0)
 * cam_d3 (default 0.0)
 * image_topic
+* min_number_of_features
+* ransac_threshold
+* feature_detector_threshold
+* feature_tracker_window_size
+* feature_tracker_max_pyramid_level
+* feature_tracker_max_iterations
+* feature_tracker_epsilon
+* feature_tracker_eigen_threshold
 
