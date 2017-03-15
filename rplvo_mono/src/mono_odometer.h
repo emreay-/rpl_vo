@@ -14,16 +14,29 @@
 
 namespace rplvo_mono {
 
-  typedef std::vector< cv::KeyPoint > FeatureVector;
+  typedef std::vector< cv::KeyPoint > KeyPointVector;
+  typedef std::vector< cv::Point2f > PointVector;
 
   struct MonoOdometerParameters {
-    size_t min_number_of_features;
-    size_t ransac_threshold;
+    int min_number_of_features;
+    int ransac_threshold;
+    int feature_detector_threshold;
+    int feature_tracker_window_size;
+    int feature_tracker_max_pyramid_level;
+    int feature_tracker_max_iterations;
+    double feature_tracker_epsilon;
+    double feature_tracker_eigen_threshold;
     std::string image_topic;
     void Read(const std::string node_namespace) {
-      min_number_of_features = vk::getParam<size_t>(node_namepsace+"min_number_of_features",100);
-      ransac_threshold = vk::getParam<size_t>(node_namespace+"ransac_threshold",100);
-      image_topic = vk::getParam<size_t>(node_namespace+"image_topic",100);
+      min_number_of_features = vk::getParam<int>(node_namepsace+"/min_number_of_features",100);
+      ransac_threshold = vk::getParam<int>(node_namespace+"/ransac_threshold",100);
+      image_topic = vk::getParam<std::string>(node_namespace+"/image_topic","/camera/image_raw");
+      feature_detector_threshold = vk::getParam<int>(node_namespace+"/feature_detector_threshold",40);
+      feature_tracker_window_size = vk::getParam<int>(node_namespace+"/feature_tracker_window_size",21);
+      feature_tracker_max_pyramid_level = vk::getParam<int>(node_namespace+"/feature_tracker_max_pyramid_level",2);
+      feature_tracker_max_iterations = vk::getParam<int>(node_namespace+"/feature_tracker_max_iterations",30);
+      feature_tracker_epsilon = vk::getParam<double>(node_namespace+"/feature_tracker_epsilon",0.01);
+      feature_tracker_eigen_threshold = vk::getParam<double>(node_namespace+"/feature_tracker_eigen_threshold",0.0001);
     }
   }; /* struct MonoOdometerParameters */
 
@@ -31,22 +44,26 @@ namespace rplvo_mono {
   public:
     MonoOdometer(const std::string node_namespace);
     ~MonoOdometer();
-    void CalculateOdometry(const sensor_msgs::ImageConstPtr& input_image);
     vk::AbstractCamera* camera_ptr_;
+    void CalculateOdometry();
 
   protected:
     const std::string node_namespace_;
     MonoOdometerParameters parameters_;
-    FeatureVector DetectFeatures(cv::Mat input_image, cv::Mat output_image, int threshold);
+    PointVector DetectFeatures();
     void TrackFeatures();
     void EstimateMotion();
     void Visualize();
 
   private:
+    void ImageCallback(const sensor_msgs::ImageConstPtr& msg);
     image_transport::Subscriber image_sub_;
     cv::Mat current_image_;
     cv::Mat previous_image_;
-    FeatureVector previous_features_;
+    cv::Mat image_to_draw_features;
+    PointVector previous_features_;
+    PointVector current_features_;
+    bool first_run_;
 
   }; /* class MonoOdometer */
 } /* namespace rplvo_mono */
