@@ -19,7 +19,8 @@ namespace rplvo_mono {
 
   struct MonoOdometerParameters {
     int min_number_of_features;
-    int ransac_threshold;
+    double ransac_threshold;
+    double ransac_confidence;
     int feature_detector_threshold;
     int feature_tracker_window_size;
     int feature_tracker_max_pyramid_level;
@@ -29,7 +30,8 @@ namespace rplvo_mono {
     std::string image_topic;
     void Read(const std::string node_namespace) {
       min_number_of_features = vk::getParam<int>(node_namepsace+"/min_number_of_features",100);
-      ransac_threshold = vk::getParam<int>(node_namespace+"/ransac_threshold",100);
+      ransac_threshold = vk::getParam<double>(node_namespace+"/ransac_threshold",1.0);
+      ransac_confidence = vk::getParam<double>(node_namespace+"/ransac_confidence",0.99);
       image_topic = vk::getParam<std::string>(node_namespace+"/image_topic","/camera/image_raw");
       feature_detector_threshold = vk::getParam<int>(node_namespace+"/feature_detector_threshold",40);
       feature_tracker_window_size = vk::getParam<int>(node_namespace+"/feature_tracker_window_size",21);
@@ -50,7 +52,7 @@ namespace rplvo_mono {
   protected:
     const std::string node_namespace_;
     MonoOdometerParameters parameters_;
-    PointVector DetectFeatures();
+    PointVector DetectFeatures(cv::Mat input_image, cv::Mat output_image);
     void TrackFeatures();
     void EstimateMotion();
     void Visualize();
@@ -60,7 +62,7 @@ namespace rplvo_mono {
     image_transport::Subscriber image_sub_;
     cv::Mat current_image_;
     cv::Mat previous_image_;
-    cv::Mat image_to_draw_features;
+    cv::Mat image_to_draw_features_;
     PointVector previous_features_;
     PointVector current_features_;
     bool first_run_;
