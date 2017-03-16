@@ -1,0 +1,32 @@
+# Camera Parameters
+cam_model: Pinhole
+cam_width: 320
+cam_height: 240
+cam_fx: 166.8004123671259
+cam_fy: 167.49083144447
+cam_cx: 157.1067659844697
+cam_cy: 122.380844501153
+cam_d0: -0.319954227739406
+cam_d1: 0.06179467075478164
+cam_d2: 0.0007151300044177912
+cam_d3: 0.005628681014523665
+image_topic: "/stereo/right/image_raw"
+
+# Frame Parameters
+odom_frame_id: "fcu"
+base_link_frame_id: "uav"
+sensor_frame_id: "camera"
+publish_tf: true
+invert_tf: false
+
+# CV Parameters
+min_number_of_features: 100
+ransac_threshold: 1
+ransac_confidence: 0.99
+feature_detector_threshold: 40
+feature_tracker_window_size: 21
+feature_tracker_max_pyramid_level: 2
+feature_tracker_max_iterations: 30
+feature_tracker_epsilon: 0.01
+feature_tracker_eigen_threshold: 0.0001
+
