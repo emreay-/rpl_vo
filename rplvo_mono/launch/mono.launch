@@ -1,0 +1,7 @@
+<launch>
+
+  <node pkg="rplvo_mono" type="mono" name="mono" output="screen">
+    <rosparam file="$(find rplvo_mono)/param/mono_parameters.yaml" command="load" />
+  </node>
+
+</launch>
