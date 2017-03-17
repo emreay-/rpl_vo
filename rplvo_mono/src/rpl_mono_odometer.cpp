@@ -42,6 +42,15 @@ namespace rplvo_mono {
     cv::Mat rectified_image;
     ((vk::PinholeCamera*)camera_ptr_)->undistortImage(raw_image, rectified_image);
     current_image_ = rectified_image.clone();
+    // Publish current image
+    ros::NodeHandle nh("~");
+    image_pub_ = nh.advertise<sensor_msgs::Image>(node_namespace_+"/image_rect",1,this);
+    cv_bridge::CvImage current;
+    current.image = current_image_;
+    current.encoding = "bgr8";
+    // Covert cv::Mat to sensor_msgs::Image and publish
+    image_pub_.publish(current.toImageMsg());
+
   } /* function ImageCallback */
 
   void MonoOdometer::CalculateOdometry() {
