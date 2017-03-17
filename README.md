@@ -2,6 +2,24 @@
 
 rpl\_vo is a visual odometry metapackage for UAV's in RPL.
 
+## Needed Packages
+
+rpl_vo uses OpenCV 3.0+ functions, but  the OpenCV version in ROS Indigo is 2.4.8. Therefore it is needed to be installed. [This package](http://wiki.ros.org/opencv3) is used rather than a stand alone installation;
+
+```
+sudo apt-get install ros-<distro>-opencv3
+```
+The library uses functionalities of [vikit](https://github.com/uzh-rpg/rpg_vikit). It is needed to be clone in the catkin workspace and built;
+```
+cd <catkin_workspace>/src
+git clone https://github.com/uzh-rpg/rpg_vikit.git
+cd ..
+catkin_make
+```
+The `MonoOdometer` class is derived from `OdometerBase` class in [viso2_ros](http://wiki.ros.org/viso2_ros). However it is not needed to install this package since the necessary header file is included.
+
+
+
 ## rplvo_mono
 
 Monocular VO package. Parameters;
