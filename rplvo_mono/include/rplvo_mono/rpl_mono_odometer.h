@@ -60,6 +60,7 @@ namespace rplvo_mono {
   private:
     void ImageCallback(const sensor_msgs::ImageConstPtr& msg);
     image_transport::Subscriber image_sub_;
+    ros::Publisher image_pub_;
     cv::Mat current_image_;
     cv::Mat previous_image_;
     cv::Mat image_to_draw_features_;
