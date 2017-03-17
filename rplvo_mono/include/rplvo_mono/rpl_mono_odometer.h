@@ -17,6 +17,11 @@ namespace rplvo_mono {
   typedef std::vector< cv::KeyPoint > KeyPointVector;
   typedef std::vector< cv::Point2f > PointVector;
 
+  ///
+  /// \struct MonoOdometerParameters
+  /// \brief The MonoOdometerParameters struct which contains the parameters needed
+  /// to run the odometer for feature detection, feature tracking, RANSAC and so on.
+  ///
   struct MonoOdometerParameters {
     int min_number_of_features;
     double ransac_threshold;
@@ -28,6 +33,13 @@ namespace rplvo_mono {
     double feature_tracker_epsilon;
     double feature_tracker_eigen_threshold;
     std::string image_topic;
+    ///
+    /// \fn Read
+    /// \brief Gathers all the values for members from ROS parameter server. Assings
+    /// deafult values in case of failure.
+    /// \param node_namespace String to state the namespace of the node which all the
+    /// parameters would be gathered relatively.
+    ///
     void Read(const std::string node_namespace) {
       min_number_of_features = vk::getParam<int>(node_namespace+"/min_number_of_features",100);
       ransac_threshold = vk::getParam<double>(node_namespace+"/ransac_threshold",1.0);
@@ -42,6 +54,10 @@ namespace rplvo_mono {
     }
   }; /* struct MonoOdometerParameters */
 
+  ///
+  /// \class MonoOdometer
+  /// \brief Class to implement monocular visual odometry
+  ///
   class MonoOdometer : public viso2_ros::OdometerBase {
   public:
     MonoOdometer(std::string node_namespace);

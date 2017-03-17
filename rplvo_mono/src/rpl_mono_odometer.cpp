@@ -10,7 +10,13 @@
 #include <iostream>
 
 namespace rplvo_mono {
-
+  ///
+  /// \fn ModoOdometer
+  /// \brief Constructor for MonoOdometer class.
+  /// \param node_namespace String to state the namespace of the node.
+  ///
+  /// Constructs the object, gathers all the necessary parameters from the parameter server, subscribes to the image topic
+  ///
   MonoOdometer::MonoOdometer(std::string node_namespace) :
     node_namespace_(node_namespace),
     camera_ptr_(NULL),
@@ -31,10 +37,21 @@ namespace rplvo_mono {
     image_sub_ = img_transport.subscribe(parameters_.image_topic, 1, &MonoOdometer::ImageCallback, this);
   } /* constructor MonoOdometer */
 
+  ///
+  /// \fn ~MonoOdometer
+  /// \brief Destructor of MonoOdometer class.
+  ///
+  /// Releases the camera object pointer.
+  ///
   MonoOdometer::~MonoOdometer() {
     delete camera_ptr_;
   }
 
+  ///
+  /// \fn ImageCallback
+  /// \brief Converts the image from ros message type to opencv type, rectifies it using the camera calibration parameters and assings it to the current image.
+  /// \param msg Incoming message from the image topic.
+  ///
   void MonoOdometer::ImageCallback(const sensor_msgs::ImageConstPtr &msg) {
     // Converting the sensor_msgs::Image type to cv::Mat
     cv_bridge::CvImagePtr input_image_ptr;
@@ -60,6 +77,10 @@ namespace rplvo_mono {
 
   } /* function ImageCallback */
 
+  ///
+  /// \fn CalculateOdometry
+  /// \brief Performs visual odometry
+  ///
   void MonoOdometer::CalculateOdometry() {
     // Throw exception if the curr_img is empty ie. no messages received in callback
     if (current_image_.empty()) {
@@ -103,6 +124,13 @@ namespace rplvo_mono {
     }
   } /* function CalculateOdometry */
 
+  ///
+  /// \fn DetectFeatures
+  /// \brief Detects features using FAST algorithm on the input image.
+  /// \param input_image Image which features are to be detected.
+  /// \param output_image Clone of input image with detected features are drawn to be shown.
+  /// \return Vector of points corresponding to the detected point features.
+  ///
   PointVector MonoOdometer::DetectFeatures(cv::Mat input_image, cv::Mat output_image) {
     KeyPointVector features;
     cv::FAST(input_image, features, parameters_.feature_detector_threshold, true);
@@ -114,6 +142,10 @@ namespace rplvo_mono {
     return feature_points;
   } /* function DetectFeatures */
 
+  ///
+  /// \fn TrackFeatures
+  /// \brief Tracks the previous features on the current image using Lucas-Kanade method with pyramids.
+  ///
   void MonoOdometer::TrackFeatures() {
     std::vector< uchar > status;
     cv::Mat error;
