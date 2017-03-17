@@ -74,9 +74,9 @@ include_directories(
 add_library(rpl_mono_odometer src/rpl_mono_odometer.cpp)
 target_link_libraries(rpl_mono_odometer ${LINK_LIBS} ${catkin_LIBRARIES})
 
-#add_executable(feature_extract src/feature_extract.cpp)
-#target_link_libraries(feature_extract ${catkin_LIBRARIES})
-#add_dependencies(feature_extract rplvo_mono_generate_messages_cpp)
+add_executable(feature_extract src/feature_extract.cpp)
+target_link_libraries(feature_extract ${catkin_LIBRARIES})
+add_dependencies(feature_extract rplvo_mono_generate_messages_cpp)
 
 add_executable(mono src/mono.cpp)
 target_link_libraries(mono rpl_mono_odometer ${catkin_LIBRARIES})

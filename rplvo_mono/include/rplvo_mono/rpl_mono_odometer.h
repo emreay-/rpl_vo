@@ -19,8 +19,7 @@ namespace rplvo_mono {
 
   ///
   /// \struct MonoOdometerParameters
-  /// \brief The MonoOdometerParameters struct which contains the parameters needed
-  /// to run the odometer for feature detection, feature tracking, RANSAC and so on.
+  /// \brief The MonoOdometerParameters struct which contains the parameters needed to run the odometer for feature detection, feature tracking, RANSAC and so on.
   ///
   struct MonoOdometerParameters {
     int min_number_of_features;
@@ -32,13 +31,12 @@ namespace rplvo_mono {
     int feature_tracker_max_iterations;
     double feature_tracker_epsilon;
     double feature_tracker_eigen_threshold;
+    int visualize_frame_tracking;
     std::string image_topic;
     ///
     /// \fn Read
-    /// \brief Gathers all the values for members from ROS parameter server. Assings
-    /// deafult values in case of failure.
-    /// \param node_namespace String to state the namespace of the node which all the
-    /// parameters would be gathered relatively.
+    /// \brief Gathers all the values for members from ROS parameter server. Assings deafult values in case of failure.
+    /// \param node_namespace String to state the namespace of the node which all the parameters would be gathered relatively.
     ///
     void Read(const std::string node_namespace) {
       min_number_of_features = vk::getParam<int>(node_namespace+"/min_number_of_features",100);
@@ -51,6 +49,7 @@ namespace rplvo_mono {
       feature_tracker_max_iterations = vk::getParam<int>(node_namespace+"/feature_tracker_max_iterations",30);
       feature_tracker_epsilon = vk::getParam<double>(node_namespace+"/feature_tracker_epsilon",0.01);
       feature_tracker_eigen_threshold = vk::getParam<double>(node_namespace+"/feature_tracker_eigen_threshold",0.0001);
+      visualize_frame_tracking = vk::getParam<int>(node_namespace+"/visualize_frame_tracking",250);
     }
   }; /* struct MonoOdometerParameters */
 
@@ -77,11 +76,14 @@ namespace rplvo_mono {
     void ImageCallback(const sensor_msgs::ImageConstPtr& msg);
     image_transport::Subscriber image_sub_;
     ros::Publisher image_pub_;
+    ros::Publisher temp_pub_;
     cv::Mat current_image_;
     cv::Mat previous_image_;
     cv::Mat image_to_draw_features_;
     PointVector previous_features_;
     PointVector current_features_;
+    int draw_accumulate_;
+    std::vector< cv::Rect > draw_container_;
     bool first_run_;
 
   }; /* class MonoOdometer */

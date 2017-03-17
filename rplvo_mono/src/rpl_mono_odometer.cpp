@@ -20,7 +20,8 @@ namespace rplvo_mono {
   MonoOdometer::MonoOdometer(std::string node_namespace) :
     node_namespace_(node_namespace),
     camera_ptr_(NULL),
-    first_run_(true) {
+    first_run_(true),
+    draw_accumulate_(0) {
     // Obtain mono odometer parameters from parameter server
     parameters_.Read(node_namespace_);
     // Create new camera object with parameters from the server assigned to the member camera pointer
@@ -82,6 +83,7 @@ namespace rplvo_mono {
   /// \brief Performs visual odometry
   ///
   void MonoOdometer::CalculateOdometry() {
+    ROS_DEBUG("Entered Calculate Odometry");
     // Throw exception if the curr_img is empty ie. no messages received in callback
     if (current_image_.empty()) {
         throw ros::Exception("No image message received yet.");
@@ -99,10 +101,32 @@ namespace rplvo_mono {
       cv::Mat essential_matrix, rotation, translation, mask;
       cv::Point2d principal_point(((vk::PinholeCamera*)camera_ptr_)->cx(), ((vk::PinholeCamera*)camera_ptr_)->cy());
       double focal_length = ((vk::PinholeCamera*)camera_ptr_)->fx();
-      essential_matrix = cv::findEssentialMat(current_features_, previous_features_, focal_length, principal_point,
-                                              cv::RANSAC, parameters_.ransac_confidence, parameters_.ransac_threshold,
-                                              mask);
-      cv::recoverPose(essential_matrix, current_features_, previous_features_, rotation, translation, focal_length, principal_point, mask);
+//      essential_matrix = cv::findEssentialMat(current_features_, previous_features_, focal_length, principal_point,
+//                                              cv::RANSAC, parameters_.ransac_confidence, parameters_.ransac_threshold,
+//                                              mask);
+//      cv::recoverPose(essential_matrix, current_features_, previous_features_, rotation, translation, focal_length, principal_point, mask);
+      image_to_draw_features_ = current_image_.clone();
+      for (size_t i = 0; i < current_features_.size(); i++) {
+        if (draw_accumulate_ < parameters_.visualize_frame_tracking) {
+          cv::Rect temp;
+          temp.x = current_features_[i].x;
+          temp.y = current_features_[i].y;
+          draw_container_.push_back(temp);
+        }
+        draw_accumulate_++;
+        for (size_t j = 0; j < draw_accumulate_; j++) {
+          cv::Point point(draw_container_[i].x,draw_container_[i].y);
+          cv::drawMarker(image_to_draw_features_, point, cv::Scalar(0,255,0), cv::MARKER_CROSS, 20, 1, 8);
+        }
+        if (draw_accumulate_ >= parameters_.visualize_frame_tracking) draw_accumulate_ = 0;
+      }
+      ROS_DEBUG("HERE");
+      ros::NodeHandle nh("~");
+      temp_pub_ = nh.advertise<sensor_msgs::Image>(node_namespace_+"/visualize",1,this);
+      cv_bridge::CvImage img;
+      img.image = image_to_draw_features_;
+      img.encoding = "bgr8";
+      temp_pub_.publish(img.toImageMsg());
 
 //      ROS_INFO("Essential Matix:");
 //      for (int i = 0; i < essential_matrix.rows; i++) {
@@ -121,6 +145,9 @@ namespace rplvo_mono {
 //      }
 
       previous_image_ = current_image_.clone();
+      previous_features_.clear();
+      previous_features_ = current_features_;
+      current_features_.clear();
     }
   } /* function CalculateOdometry */
 
@@ -172,7 +199,6 @@ namespace rplvo_mono {
     }
     previous_features_.clear();
     previous_features_ = previous_features_temp;
-
   } /* function TrackFeatures */
 
 } /* namespace rplvo_mono */

@@ -20,10 +20,10 @@ publish_tf: true
 invert_tf: false
 
 # CV Parameters
-min_number_of_features: 100
+min_number_of_features: 20
 ransac_threshold: 1
 ransac_confidence: 0.99
-feature_detector_threshold: 40
+feature_detector_threshold: 20
 feature_tracker_window_size: 21
 feature_tracker_max_pyramid_level: 2
 feature_tracker_max_iterations: 30

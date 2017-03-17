@@ -31,7 +31,7 @@ int main(int argc, char **argv) {
   ros::NodeHandle nh;
   cv::namedWindow("Image");
   image_transport::ImageTransport img_transport(nh);
-  image_transport::Subscriber image_sub = img_transport.subscribe("/stereo/right/image_raw",10,camcb);
+  image_transport::Subscriber image_sub = img_transport.subscribe("/mono/image_rect",10,camcb);
   ros::spin();
   return 0;
 }
