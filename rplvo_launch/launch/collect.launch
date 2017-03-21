@@ -2,9 +2,9 @@
 
 <include file="$(find mavros)/launch/px4.launch" />  
 <include file="$(find mocap_optitrack)/launch/mocap.launch" />
-<include file="$(find rpl_vo)/launch/stereo_node.launch"/>
+<include file="$(find rplvo_launch)/launch/cam.launch"/>
 
-<node pkg="rosbag" type="record" name="record" args="-o /home/rpl/ /stereo/left/camera_info /stereo/left/image_raw /stereo/right/camera_info /stereo/right/image_raw /mavros/imu/data /mavros/imu/data_raw /mavros/mocap/pose /tf" output="screen" />
+<node pkg="rosbag" type="record" name="record" args="-o /home/rpl/ /camera_down/camera_info /camera_down/image_raw/ /mavros/imu/data /mavros/imu/data_raw /mavros/mocap/pose /tf" output="screen" />
 
 
 
