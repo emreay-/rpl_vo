@@ -62,11 +62,15 @@ namespace rplvo_mono {
       ROS_ERROR("cv_bridge exception: %s", e.what());
       return;
     }
-    // Rectify the image
     const cv::Mat raw_image = input_image_ptr->image.clone();
-    cv::Mat rectified_image;
-    ((vk::PinholeCamera*)camera_ptr_)->undistortImage(raw_image, rectified_image);
-    current_image_ = rectified_image.clone();
+    // Rectify the image if the parameter is passed
+    if (parameters_.rectify_image) {
+      cv::Mat rectified_image;
+      ((vk::PinholeCamera*)camera_ptr_)->undistortImage(raw_image, rectified_image);
+      current_image_ = rectified_image.clone();
+    } else {
+      current_image_ = raw_image;
+    }
     // Publish current image
     ros::NodeHandle nh("~");
     image_pub_ = nh.advertise<sensor_msgs::Image>(node_namespace_+"/image_rect",1,this);
