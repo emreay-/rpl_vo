@@ -32,6 +32,7 @@ namespace rplvo_mono {
     double feature_tracker_epsilon;
     double feature_tracker_eigen_threshold;
     int visualize_frame_tracking;
+    bool rectify_image;
     std::string image_topic;
     ///
     /// \fn Read
@@ -50,6 +51,7 @@ namespace rplvo_mono {
       feature_tracker_epsilon = vk::getParam<double>(node_namespace+"/feature_tracker_epsilon",0.01);
       feature_tracker_eigen_threshold = vk::getParam<double>(node_namespace+"/feature_tracker_eigen_threshold",0.0001);
       visualize_frame_tracking = vk::getParam<int>(node_namespace+"/visualize_frame_tracking",250);
+      rectify_image = vk::getParam<bool>(node_namespace+"/rectify_image",true);
     }
   }; /* struct MonoOdometerParameters */
 
