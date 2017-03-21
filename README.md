@@ -41,6 +41,7 @@ Monocular VO package. Parameters;
 * cam_d2 (default 0.0)
 * cam_d3 (default 0.0)
 * image_topic
+* rectify_image
 * min_number_of_features
 * ransac_threshold
 * ransac_confidence
