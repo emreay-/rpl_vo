@@ -12,7 +12,7 @@
 
     <param name="camera_name" type="str" value="camera_down" /> <!-- == namespace for topics and services -->
     <param name="camera_topic" type="str" value="image_raw" />
-    <param name="camera_id" type="int" value="63" /> <!-- 0 = any camera; 1+: camera ID -->
+    <param name="camera_id" type="int" value="0" /> <!-- 0 = any camera; 1+: camera ID -->
     <param name="camera_intrinsics_file" type="string" value="" /> <!-- default: ~/.ros/camera_info/<camera_name>.yaml -->
     <param name="camera_parameters_file" type="string" value="" /> <!-- default: ~/.ros/camera_conf/<camera_name>.ini -->
 
