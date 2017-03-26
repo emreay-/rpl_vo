@@ -2,10 +2,10 @@
 
   <env name="ROSCONSOLE_CONFIG_FILE" value="$(find rplvo_launch)/rosconsole.config"/>
 
-  <arg name="parameter_file" type="string" default="mono_parameters.yaml" />
+  <arg name="calibration" default="mono_parameters" />
 
   <node pkg="rplvo_mono" type="mono" name="mono" output="screen">
-    <rosparam file="$(find rplvo_mono)/param/mono_parameters.yaml" command="load" />
+    <rosparam file="$(find rplvo_mono)/param/$(arg calibration).yaml" command="load" />
   </node>
 
 </launch>
