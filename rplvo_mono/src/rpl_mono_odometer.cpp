@@ -32,10 +32,11 @@ namespace rplvo_mono {
     previous_image_.release();
     current_features_.clear();
     previous_features_.clear();
+    feature_container_.clear();
     // Camera subscription with image_transport
     ros::NodeHandle nh;
     image_transport::ImageTransport img_transport(nh);
-    image_sub_ = img_transport.subscribe(parameters_.image_topic, 1, &MonoOdometer::ImageCallback, this);
+    image_sub_ = img_transport.subscribe(parameters_.image_topic, 10, &MonoOdometer::ImageCallback, this);
   } /* constructor MonoOdometer */
 
   ///
@@ -66,6 +67,8 @@ namespace rplvo_mono {
     // Rectify the image if the parameter is passed
     if (parameters_.rectify_image) {
       cv::Mat rectified_image;
+      // Casting pointers from AbstractCamera ptr to PinholeCamera ptr.
+      // The latter is a child class of the first and we know we would only use pinhole model
       ((vk::PinholeCamera*)camera_ptr_)->undistortImage(raw_image, rectified_image);
       current_image_ = rectified_image.clone();
     } else {
@@ -82,6 +85,25 @@ namespace rplvo_mono {
 
   } /* function ImageCallback */
 
+  void MonoOdometer::DrawCircles(cv::Mat image, PointContainer feature_container) {
+    for (size_t i = 0; i < feature_container.size(); i++) {
+      for (size_t j = 0; j < feature_container[i].size(); j++) {
+        cv::circle(image, feature_container[i][j], 2, cv::Scalar(255,0,0), 2, 4, 0);
+      }
+    }
+  }
+
+  void MonoOdometer::DrawLines(cv::Mat image, PointContainer feature_container) {
+    if (feature_container.size() <= 1) {
+      throw ros::Exception("Invalid container size for DrawLine Function. Should be > 1");
+    }
+    for (size_t i = 1; i < feature_container.size(); i++) {
+      for (size_t j = 0; j < feature_container[i].size(); j++) {
+        cv::line(image, feature_container[i][j], feature_container[i-1][j], cv::Scalar(255,0,0), 2, 4, 0);
+      }
+    }
+  }
+
   ///
   /// \fn CalculateOdometry
   /// \brief Performs visual odometry
@@ -90,7 +112,7 @@ namespace rplvo_mono {
     ROS_DEBUG("Entered Calculate Odometry");
     // Throw exception if the curr_img is empty ie. no messages received in callback
     if (current_image_.empty()) {
-        throw ros::Exception("No image message received yet.");
+      throw ros::Exception("No image message received yet.");
     } else if (first_run_) {
       previous_features_.clear();
       previous_features_ = DetectFeatures(current_image_, image_to_draw_features_);
@@ -99,33 +121,41 @@ namespace rplvo_mono {
     } else {
       TrackFeatures();
       if (current_features_.size() < parameters_.min_number_of_features) {
+        ROS_ERROR("Re-detecting Point Robits");
         previous_features_ = DetectFeatures(previous_image_, image_to_draw_features_);
         TrackFeatures();
       }
-      cv::Mat essential_matrix, rotation, translation, mask;
-      cv::Point2d principal_point(((vk::PinholeCamera*)camera_ptr_)->cx(), ((vk::PinholeCamera*)camera_ptr_)->cy());
-      double focal_length = ((vk::PinholeCamera*)camera_ptr_)->fx();
-//      essential_matrix = cv::findEssentialMat(current_features_, previous_features_, focal_length, principal_point,
-//                                              cv::RANSAC, parameters_.ransac_confidence, parameters_.ransac_threshold,
-//                                              mask);
-//      cv::recoverPose(essential_matrix, current_features_, previous_features_, rotation, translation, focal_length, principal_point, mask);
+
+//      if (draw_accumulate_ == 0 || draw_accumulate_ >= parameters_.visualize_frame_tracking) {
+//        image_to_draw_features_ = current_image_.clone();
+//        sketch_ = current_image_.clone();
+//        sketch_.setTo(cv::Scalar(0,0,0));
+//        draw_accumulate_ = 1;
+//      } else if (draw_accumulate_ < parameters_.visualize_frame_tracking) {
+//        draw_accumulate_++;
+//        for (size_t i = 0; i < current_features_.size(); i++) {
+//          cv::line(sketch_, current_features_[i], previous_features_[i], cv::Scalar(255,0,0), 2, 4, 0);
+//          cv::circle(sketch_, current_features_[i], 2, cv::Scalar(255,0,0), 2, 4, 0);
+//        }
+//        //cv::add(image_to_draw_features_, sketch_, image_to_draw_features_, -1);
+//      }
+
+      // Visualize tracked features
       image_to_draw_features_ = current_image_.clone();
-      for (size_t i = 0; i < current_features_.size(); i++) {
-        if (draw_accumulate_ < parameters_.visualize_frame_tracking) {
-          cv::Rect temp;
-          temp.x = current_features_[i].x;
-          temp.y = current_features_[i].y;
-          draw_container_.push_back(temp);
-        }
+      if (draw_accumulate_ == 0 || draw_accumulate_ >= parameters_.visualize_frame_tracking) {
+        draw_accumulate_ = 1;
+        feature_container_.clear();
+        feature_container_.push_back(current_features_);
+        DrawCircles(image_to_draw_features_, feature_container_);
+      } else if (draw_accumulate_ < parameters_.visualize_frame_tracking) {
         draw_accumulate_++;
-        for (size_t j = 0; j < draw_accumulate_; j++) {
-          cv::Point point(draw_container_[i].x,draw_container_[i].y);
-          cv::drawMarker(image_to_draw_features_, point, cv::Scalar(0,255,0), cv::MARKER_CROSS, 20, 1, 8);
-        }
-        if (draw_accumulate_ >= parameters_.visualize_frame_tracking) draw_accumulate_ = 0;
+        feature_container_.push_back(current_features_);
+        DrawCircles(image_to_draw_features_, feature_container_);
+        DrawLines(image_to_draw_features_, feature_container_);
       }
-      ROS_DEBUG("HERE");
-      ros::NodeHandle nh("~");
+
+      // Publishing image for visualization
+      ros::NodeHandle nh;
       temp_pub_ = nh.advertise<sensor_msgs::Image>(node_namespace_+"/visualize",1,this);
       cv_bridge::CvImage img;
       img.image = image_to_draw_features_;
@@ -148,6 +178,13 @@ namespace rplvo_mono {
 //        std::cout << std::endl;
 //      }
 
+      cv::Mat essential_matrix, rotation, translation, mask;
+      cv::Point2d principal_point(((vk::PinholeCamera*)camera_ptr_)->cx(), ((vk::PinholeCamera*)camera_ptr_)->cy());
+      double focal_length = ((vk::PinholeCamera*)camera_ptr_)->fx();
+//      essential_matrix = cv::findEssentialMat(current_features_, previous_features_, focal_length, principal_point,
+//                                              cv::RANSAC, parameters_.ransac_confidence, parameters_.ransac_threshold,
+//                                              mask);
+//      cv::recoverPose(essential_matrix, current_features_, previous_features_, rotation, translation, focal_length, principal_point, mask);
       previous_image_ = current_image_.clone();
       previous_features_.clear();
       previous_features_ = current_features_;
@@ -164,7 +201,14 @@ namespace rplvo_mono {
   ///
   PointVector MonoOdometer::DetectFeatures(cv::Mat input_image, cv::Mat output_image) {
     KeyPointVector features;
-    cv::FAST(input_image, features, parameters_.feature_detector_threshold, true);
+    int no_feature_count = 0;
+    while (features.empty()) {
+      no_feature_count++;
+      cv::FAST(input_image, features, parameters_.feature_detector_threshold, true);
+      if (no_feature_count > 10) {
+        throw std::runtime_error("Can't detect features on current scene!");
+      }
+    }
     ROS_DEBUG("Number of features: %zu", features.size());
     cv::drawKeypoints(input_image, features, output_image,
                       cv::Scalar::all(-1), cv::DrawMatchesFlags::DEFAULT);
