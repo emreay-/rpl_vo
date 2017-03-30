@@ -29,4 +29,5 @@ feature_tracker_max_pyramid_level: 2
 feature_tracker_max_iterations: 30
 feature_tracker_epsilon: 0.01
 feature_tracker_eigen_threshold: 0.0001
-
+visualize: true
+visualize_frame_tracking: 10
