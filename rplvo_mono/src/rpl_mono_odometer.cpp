@@ -8,6 +8,7 @@
 #include <opencv2/video/tracking.hpp> // cv::calcOpticalFlowPyrLK
 #include <opencv2/calib3d/calib3d.hpp> //cv::findEssentialMat
 #include <iostream>
+#include <time.h>
 
 namespace rplvo_mono {
   ///
@@ -33,6 +34,14 @@ namespace rplvo_mono {
     current_features_.clear();
     previous_features_.clear();
     feature_container_.clear();
+    if (parameters_.visualize) {
+      srand(std::time(NULL));
+      for (int i = 0; i < parameters_.visualize_color_variety; i++) {
+        color_vector_.push_back(cv::Scalar(rand() % 255, rand() % 255, rand() % 255));
+      }
+    } else {
+      color_vector_.clear();
+    }
     // Camera subscription with image_transport
     ros::NodeHandle nh;
     image_transport::ImageTransport img_transport(nh);
@@ -88,7 +97,7 @@ namespace rplvo_mono {
   void MonoOdometer::DrawCircles(cv::Mat image, PointContainer feature_container) {
     for (size_t i = 0; i < feature_container.size(); i++) {
       for (size_t j = 0; j < feature_container[i].size(); j++) {
-        cv::circle(image, feature_container[i][j], 2, cv::Scalar(255,0,0), 2, 4, 0);
+        cv::circle(image, feature_container[i][j], 2, color_vector_[j % parameters_.visualize_color_variety], 2, 4, 0);
       }
     }
   }
@@ -99,7 +108,7 @@ namespace rplvo_mono {
     }
     for (size_t i = 1; i < feature_container.size(); i++) {
       for (size_t j = 0; j < feature_container[i].size(); j++) {
-        cv::line(image, feature_container[i][j], feature_container[i-1][j], cv::Scalar(255,0,0), 2, 4, 0);
+        cv::line(image, feature_container[i][j], feature_container[i-1][j], color_vector_[j % parameters_.visualize_color_variety], 2, 4, 0);
       }
     }
   }
