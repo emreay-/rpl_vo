@@ -17,6 +17,7 @@ namespace rplvo_mono {
   typedef std::vector< cv::KeyPoint > KeyPointVector;
   typedef std::vector< cv::Point2f > PointVector;
   typedef std::vector < PointVector > PointContainer;
+  typedef std::vector < cv::Scalar > ScalarVector;
 
   ///
   /// \struct MonoOdometerParameters
@@ -26,16 +27,19 @@ namespace rplvo_mono {
     int min_number_of_features;
     double ransac_threshold;
     double ransac_confidence;
+    std::string image_topic;
+    bool rectify_image;
     int feature_detector_threshold;
     int feature_tracker_window_size;
     int feature_tracker_max_pyramid_level;
     int feature_tracker_max_iterations;
     double feature_tracker_epsilon;
     double feature_tracker_eigen_threshold;
-    int visualize_frame_tracking;
-    bool rectify_image;
     bool visualize;
-    std::string image_topic;
+    int visualize_frame_tracking;
+    int visualize_color_variety;
+
+
     ///
     /// \fn Read
     /// \brief Gathers all the values for members from ROS parameter server. Assings deafult values in case of failure.
@@ -46,15 +50,16 @@ namespace rplvo_mono {
       ransac_threshold = vk::getParam<double>(node_namespace+"/ransac_threshold",1.0);
       ransac_confidence = vk::getParam<double>(node_namespace+"/ransac_confidence",0.99);
       image_topic = vk::getParam<std::string>(node_namespace+"/image_topic","/camera/image_raw");
+      rectify_image = vk::getParam<bool>(node_namespace+"/rectify_image",true);
       feature_detector_threshold = vk::getParam<int>(node_namespace+"/feature_detector_threshold",40);
       feature_tracker_window_size = vk::getParam<int>(node_namespace+"/feature_tracker_window_size",21);
       feature_tracker_max_pyramid_level = vk::getParam<int>(node_namespace+"/feature_tracker_max_pyramid_level",2);
       feature_tracker_max_iterations = vk::getParam<int>(node_namespace+"/feature_tracker_max_iterations",30);
       feature_tracker_epsilon = vk::getParam<double>(node_namespace+"/feature_tracker_epsilon",0.01);
       feature_tracker_eigen_threshold = vk::getParam<double>(node_namespace+"/feature_tracker_eigen_threshold",0.0001);
-      visualize_frame_tracking = vk::getParam<int>(node_namespace+"/visualize_frame_tracking",10);
-      rectify_image = vk::getParam<bool>(node_namespace+"/rectify_image",true);
       visualize = vk::getParam<bool>(node_namespace+"/visualize",false);
+      visualize_frame_tracking = vk::getParam<int>(node_namespace+"/visualize_frame_tracking",10);
+      visualize_color_variety = vk::getParam<int>(node_namespace+"/visualize_color_variety",50);
     }
   }; /* struct MonoOdometerParameters */
 
@@ -81,6 +86,7 @@ namespace rplvo_mono {
     void ImageCallback(const sensor_msgs::ImageConstPtr& msg);
     void DrawCircles(cv::Mat image, PointContainer feature_container);
     void DrawLines(cv::Mat image, PointContainer feature_container);
+    ScalarVector color_vector_;
     image_transport::Subscriber image_sub_;
     ros::Publisher image_pub_;
     ros::Publisher temp_pub_;
