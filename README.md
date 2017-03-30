@@ -51,5 +51,7 @@ Monocular VO package. Parameters;
 * feature_tracker_max_iterations
 * feature_tracker_epsilon
 * feature_tracker_eigen_threshold
+* visualize
 * visualize_frame_tracking
+* visualize_color_variety
 

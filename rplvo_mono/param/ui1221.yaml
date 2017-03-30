@@ -32,3 +32,4 @@ feature_tracker_eigen_threshold: 0.0001
 rectify_image: true
 visualize: true
 visualize_frame_tracking: 10
+visualize_color_variety: 50
