@@ -126,41 +126,45 @@ namespace rplvo_mono {
         TrackFeatures();
       }
 
-//      if (draw_accumulate_ == 0 || draw_accumulate_ >= parameters_.visualize_frame_tracking) {
-//        image_to_draw_features_ = current_image_.clone();
-//        sketch_ = current_image_.clone();
-//        sketch_.setTo(cv::Scalar(0,0,0));
-//        draw_accumulate_ = 1;
-//      } else if (draw_accumulate_ < parameters_.visualize_frame_tracking) {
-//        draw_accumulate_++;
-//        for (size_t i = 0; i < current_features_.size(); i++) {
-//          cv::line(sketch_, current_features_[i], previous_features_[i], cv::Scalar(255,0,0), 2, 4, 0);
-//          cv::circle(sketch_, current_features_[i], 2, cv::Scalar(255,0,0), 2, 4, 0);
-//        }
-//        //cv::add(image_to_draw_features_, sketch_, image_to_draw_features_, -1);
-//      }
+      if (parameters_.visualize) {
+        // Visualize tracked features
+        image_to_draw_features_ = current_image_.clone();
+        if (draw_accumulate_ == 0 || draw_accumulate_ >= parameters_.visualize_frame_tracking) {
+          draw_accumulate_ = 1;
+          feature_container_.clear();
+          feature_container_.push_back(current_features_);
+          DrawCircles(image_to_draw_features_, feature_container_);
+        } else if (draw_accumulate_ < parameters_.visualize_frame_tracking) {
+          draw_accumulate_++;
+          feature_container_.push_back(current_features_);
+          DrawCircles(image_to_draw_features_, feature_container_);
+          DrawLines(image_to_draw_features_, feature_container_);
+        }
 
-      // Visualize tracked features
-      image_to_draw_features_ = current_image_.clone();
-      if (draw_accumulate_ == 0 || draw_accumulate_ >= parameters_.visualize_frame_tracking) {
-        draw_accumulate_ = 1;
-        feature_container_.clear();
-        feature_container_.push_back(current_features_);
-        DrawCircles(image_to_draw_features_, feature_container_);
-      } else if (draw_accumulate_ < parameters_.visualize_frame_tracking) {
-        draw_accumulate_++;
-        feature_container_.push_back(current_features_);
-        DrawCircles(image_to_draw_features_, feature_container_);
-        DrawLines(image_to_draw_features_, feature_container_);
+        //      if (draw_accumulate_ == 0 || draw_accumulate_ >= parameters_.visualize_frame_tracking) {
+        //        image_to_draw_features_ = current_image_.clone();
+        //        sketch_ = current_image_.clone();
+        //        sketch_.setTo(cv::Scalar(0,0,0));
+        //        draw_accumulate_ = 1;
+        //      } else if (draw_accumulate_ < parameters_.visualize_frame_tracking) {
+        //        draw_accumulate_++;
+        //        for (size_t i = 0; i < current_features_.size(); i++) {
+        //          cv::line(sketch_, current_features_[i], previous_features_[i], cv::Scalar(255,0,0), 2, 4, 0);
+        //          cv::circle(sketch_, current_features_[i], 2, cv::Scalar(255,0,0), 2, 4, 0);
+        //        }
+        //        //cv::add(image_to_draw_features_, sketch_, image_to_draw_features_, -1);
+        //      }
+
+        // Publishing image for visualization
+        ros::NodeHandle nh;
+        temp_pub_ = nh.advertise<sensor_msgs::Image>(node_namespace_+"/visualize",1,this);
+        cv_bridge::CvImage img;
+        img.image = image_to_draw_features_;
+        img.encoding = "bgr8";
+        temp_pub_.publish(img.toImageMsg());
       }
 
-      // Publishing image for visualization
-      ros::NodeHandle nh;
-      temp_pub_ = nh.advertise<sensor_msgs::Image>(node_namespace_+"/visualize",1,this);
-      cv_bridge::CvImage img;
-      img.image = image_to_draw_features_;
-      img.encoding = "bgr8";
-      temp_pub_.publish(img.toImageMsg());
+
 
 //      ROS_INFO("Essential Matix:");
 //      for (int i = 0; i < essential_matrix.rows; i++) {
