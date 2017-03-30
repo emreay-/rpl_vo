@@ -16,6 +16,7 @@ namespace rplvo_mono {
 
   typedef std::vector< cv::KeyPoint > KeyPointVector;
   typedef std::vector< cv::Point2f > PointVector;
+  typedef std::vector < PointVector > PointContainer;
 
   ///
   /// \struct MonoOdometerParameters
@@ -50,7 +51,7 @@ namespace rplvo_mono {
       feature_tracker_max_iterations = vk::getParam<int>(node_namespace+"/feature_tracker_max_iterations",30);
       feature_tracker_epsilon = vk::getParam<double>(node_namespace+"/feature_tracker_epsilon",0.01);
       feature_tracker_eigen_threshold = vk::getParam<double>(node_namespace+"/feature_tracker_eigen_threshold",0.0001);
-      visualize_frame_tracking = vk::getParam<int>(node_namespace+"/visualize_frame_tracking",250);
+      visualize_frame_tracking = vk::getParam<int>(node_namespace+"/visualize_frame_tracking",10);
       rectify_image = vk::getParam<bool>(node_namespace+"/rectify_image",true);
     }
   }; /* struct MonoOdometerParameters */
@@ -76,6 +77,8 @@ namespace rplvo_mono {
 
   private:
     void ImageCallback(const sensor_msgs::ImageConstPtr& msg);
+    void DrawCircles(cv::Mat image, PointContainer feature_container);
+    void DrawLines(cv::Mat image, PointContainer feature_container);
     image_transport::Subscriber image_sub_;
     ros::Publisher image_pub_;
     ros::Publisher temp_pub_;
@@ -85,7 +88,8 @@ namespace rplvo_mono {
     PointVector previous_features_;
     PointVector current_features_;
     int draw_accumulate_;
-    std::vector< cv::Rect > draw_container_;
+    cv::Mat sketch_;
+    PointContainer feature_container_;
     bool first_run_;
 
   }; /* class MonoOdometer */
