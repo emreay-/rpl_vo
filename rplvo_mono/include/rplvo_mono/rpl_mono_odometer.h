@@ -1,7 +1,7 @@
 #ifndef rpl_mono_odometer_h
 #define rpl_mono_odometer_h
 
-#include "odometer_base.h"
+#include "rplvo_core/odometer_base.h"
 #include <vector>
 #include <string>
 #include <opencv2/imgproc/imgproc.hpp>
