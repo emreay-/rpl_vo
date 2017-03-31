@@ -5,7 +5,7 @@
 int main(int argc, char **argv) {
   ros::init(argc, argv, "mono_vo");
   std::string node_namespace = ros::this_node::getName();
-  rplvo_mono::MonoOdometer mono(node_namespace);
+  rplvo::mono::MonoOdometer mono(node_namespace);
 
   while (true) {
     try {
