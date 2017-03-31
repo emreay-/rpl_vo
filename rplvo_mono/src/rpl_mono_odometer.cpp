@@ -36,7 +36,7 @@ namespace rplvo {
       // Camera subscription with image_transport
       ros::NodeHandle nh;
       image_transport::ImageTransport img_transport(nh);
-      image_sub_ = img_transport.subscribe(parameters_.image_topic, 10, &MonoOdometer::ImageCallback, this);
+      image_sub_ = img_transport.subscribe(parameters_.image_topic, 2, &MonoOdometer::ImageCallback, this);
 
       // If visualizing is switched on, create a visualizer object
       if(parameters_.visualize) {
@@ -63,6 +63,7 @@ namespace rplvo {
     /// \param msg Incoming message from the image topic.
     ///
     void MonoOdometer::ImageCallback(const sensor_msgs::ImageConstPtr &msg) {
+      current_image_header_ = msg->header;
       // Converting the sensor_msgs::Image type to cv::Mat
       cv_bridge::CvImagePtr input_image_ptr;
       try {
@@ -152,7 +153,7 @@ namespace rplvo {
     /// \brief Performs visual odometry
     ///
     void MonoOdometer::CalculateOdometry() {
-      ROS_DEBUG("Entered Calculate Odometry");
+      //ROS_DEBUG("Entered Calculate Odometry");
       // Throw exception if the curr_img is empty ie. no messages received in callback
       if (current_image_.empty()) {
         throw ros::Exception("No image message received yet.");
@@ -173,29 +174,47 @@ namespace rplvo {
           visualizer_ptr_->ShowTracking(current_image_, current_features_);
         }
 
-  //      ROS_INFO("Essential Matix:");
-  //      for (int i = 0; i < essential_matrix.rows; i++) {
-  //        for (int j = 0; j < essential_matrix.cols; j++) {
-  //          std::cout << essential_matrix.at<int>(i,j) << "\t";
-  //        }
-  //        std::cout << std::endl;
-  //      }
+        // Estimation and publishing
+//        cv::Mat essential_matrix, rotation, translation, mask;
+//        cv::Point2d principal_point(((vk::PinholeCamera*)camera_ptr_)->cx(), ((vk::PinholeCamera*)camera_ptr_)->cy());
+//        double focal_length = ((vk::PinholeCamera*)camera_ptr_)->fx();
+//        essential_matrix = cv::findEssentialMat(current_features_, previous_features_, focal_length, principal_point,
+//                                                cv::RANSAC, parameters_.ransac_confidence, parameters_.ransac_threshold,
+//                                                mask);
+//        cv::recoverPose(essential_matrix, current_features_, previous_features_, rotation, translation, focal_length, principal_point, mask);
 
-  //      ROS_INFO("Rotation Matix:");
-  //      for (int i = 0; i < rotation.rows; i++) {
-  //        for (int j = 0; j < rotation.cols; j++) {
-  //          std::cout << rotation.at<int>(i,j) << "\t";
-  //        }
-  //        std::cout << std::endl;
-  //      }
+//        ROS_INFO("Essential Matix:");
+//        for (int i = 0; i < essential_matrix.rows; i++) {
+//          for (int j = 0; j < essential_matrix.cols; j++) {
+//            std::cout << essential_matrix.at<int>(i,j) << "\t";
+//          }
+//          std::cout << std::endl;
+//        }
 
-        cv::Mat essential_matrix, rotation, translation, mask;
-        cv::Point2d principal_point(((vk::PinholeCamera*)camera_ptr_)->cx(), ((vk::PinholeCamera*)camera_ptr_)->cy());
-        double focal_length = ((vk::PinholeCamera*)camera_ptr_)->fx();
-  //      essential_matrix = cv::findEssentialMat(current_features_, previous_features_, focal_length, principal_point,
-  //                                              cv::RANSAC, parameters_.ransac_confidence, parameters_.ransac_threshold,
-  //                                              mask);
-  //      cv::recoverPose(essential_matrix, current_features_, previous_features_, rotation, translation, focal_length, principal_point, mask);
+//        ROS_INFO("Rotation Matix:");
+//        for (int i = 0; i < rotation.rows; i++) {
+//          for (int j = 0; j < rotation.cols; j++) {
+//            std::cout << rotation.at<int>(i,j) << "\t";
+//          }
+//          std::cout << std::endl;
+//        }
+
+//        ROS_INFO("Trans Matix:");
+//        for (int i = 0; i < translation.rows; i++) {
+//          for (int j = 0; j < translation.cols; j++) {
+//            std::cout << translation.at<int>(i,j) << "\t";
+//          }
+//          std::cout << std::endl;
+//        }
+
+//        tf::Matrix3x3 R(
+//          rotation.at<int>(0,0), rotation.at<int>(0,1), rotation.at<int>(0,2),
+//          rotation.at<int>(1,0), rotation.at<int>(1,1), rotation.at<int>(1,2),
+//          rotation.at<int>(2,0), rotation.at<int>(2,1), rotation.at<int>(2,2));
+//        tf::Vector3 T(translation.at<int>(0,0), translation.at<int>(0,1), translation.at<int>(0,2));
+//        tf::Transform delta_transform(R,T);
+//        integrateAndPublish(delta_transform, current_image_header_.stamp);
+
         previous_image_ = current_image_.clone();
         previous_features_.clear();
         previous_features_ = current_features_;
