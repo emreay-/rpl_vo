@@ -10,6 +10,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/features2d/features2d.hpp>
 #include <sensor_msgs/Image.h>
+#include <std_msgs/Header.h>
 #include <image_transport/image_transport.h>
 #include <vikit/params_helper.h>
 #include <vikit/abstract_camera.h>
@@ -80,6 +81,7 @@ namespace rplvo {
       void ImageCallback(const sensor_msgs::ImageConstPtr& msg);
       image_transport::Subscriber image_sub_;
       ros::Publisher image_pub_;
+      std_msgs::Header current_image_header_;
       cv::Mat current_image_;
       cv::Mat previous_image_;
       PointVector previous_features_;
