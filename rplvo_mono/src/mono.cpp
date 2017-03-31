@@ -1,5 +1,6 @@
 #include "rplvo_mono/rpl_mono_odometer.h"
 #include <ros/ros.h>
+#include <ros/time.h>
 #include <string>
 
 int main(int argc, char **argv) {
@@ -10,7 +11,9 @@ int main(int argc, char **argv) {
   while (true) {
     try {
       ros::spinOnce();
+      ros::WallTime t = ros::WallTime::now();
       mono.CalculateOdometry();
+      ROS_INFO("Duration: %f", (ros::WallTime::now()-t).toSec());
     } catch (ros::Exception& e) {
       ROS_WARN("Calculate Odometry exception: %s", e.what());
       ros::Duration(1).sleep();
