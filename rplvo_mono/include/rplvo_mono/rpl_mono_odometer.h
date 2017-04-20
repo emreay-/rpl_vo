@@ -87,6 +87,7 @@ namespace rplvo {
       PointVector previous_features_;
       PointVector current_features_;
       bool first_run_;
+      cv::Mat Rf_, Tf_, Rf_prev_, Tf_prev_;
 
     }; // class MonoOdometer
   } // namespace mono

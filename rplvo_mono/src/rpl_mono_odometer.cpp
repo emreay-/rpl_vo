@@ -33,6 +33,22 @@ namespace rplvo {
       current_features_.clear();
       previous_features_.clear();
 
+      Rf_ = cv::Mat::eye(3,3,CV_64F);
+//      Rf_.at<int>(0,0) = 1;
+//      Rf_.at<int>(0,1) = 0;
+//      Rf_.at<int>(0,2) = 0;
+//      Rf_.at<int>(1,0) = 0;
+//      Rf_.at<int>(1,1) = 1;
+//      Rf_.at<int>(1,2) = 0;
+//      Rf_.at<int>(2,0) = 0;
+//      Rf_.at<int>(2,1) = 0;
+//      Rf_.at<int>(2,2) = 1;
+
+      Tf_ = cv::Mat::zeros(3,1,CV_64F);
+//      Tf_.at<int>(0,0) = 0;
+//      Tf_.at<int>(1,0) = 0;
+//      Tf_.at<int>(2,0) = 0;
+
       // Camera subscription with image_transport
       ros::NodeHandle nh;
       image_transport::ImageTransport img_transport(nh);
@@ -175,13 +191,45 @@ namespace rplvo {
         }
 
         // Estimation and publishing
-//        cv::Mat essential_matrix, rotation, translation, mask;
-//        cv::Point2d principal_point(((vk::PinholeCamera*)camera_ptr_)->cx(), ((vk::PinholeCamera*)camera_ptr_)->cy());
-//        double focal_length = ((vk::PinholeCamera*)camera_ptr_)->fx();
-//        essential_matrix = cv::findEssentialMat(current_features_, previous_features_, focal_length, principal_point,
-//                                                cv::RANSAC, parameters_.ransac_confidence, parameters_.ransac_threshold,
-//                                                mask);
-//        cv::recoverPose(essential_matrix, current_features_, previous_features_, rotation, translation, focal_length, principal_point, mask);
+        cv::Mat essential_matrix, rotation, translation, mask;
+        cv::Point2d principal_point(((vk::PinholeCamera*)camera_ptr_)->cx(), ((vk::PinholeCamera*)camera_ptr_)->cy());
+        double focal_length = ((vk::PinholeCamera*)camera_ptr_)->fx();
+        essential_matrix = cv::findEssentialMat(current_features_, previous_features_, focal_length, principal_point,
+                                                cv::RANSAC, parameters_.ransac_confidence, parameters_.ransac_threshold,
+                                                mask);
+        cv::recoverPose(essential_matrix, current_features_, previous_features_, rotation, translation, focal_length, principal_point, mask);
+
+//        ROS_INFO("R:");
+//        for (int i = 0; i < rotation.rows; i++) {
+//          for (int j = 0; j < rotation.cols; j++) {
+//            std::cout << rotation.at<double>(i,j) << "\t";
+//          }
+//          std::cout << std::endl;
+//        }
+
+//        ROS_INFO("Type:\t %d",rotation.type());
+//        rotation.convertTo(rotation, 5);
+//        ROS_INFO("Type:\t %d",rotation.type());
+//        translation.convertTo(translation, 5);
+//        double scale = 1.0;
+//        Tf_ += scale*(Rf_ * translation);
+//        Rf_ *= rotation;
+
+//        ROS_INFO("Rf:");
+//        for (int i = 0; i < Rf_.rows; i++) {
+//          for (int j = 0; j < Rf_.cols; j++) {
+//            std::cout << Rf_.at<double>(i,j) << "\t";
+//          }
+//          std::cout << std::endl;
+//        }
+
+//        ROS_INFO("Tf:");
+//        for (int i = 0; i < Tf_.rows; i++) {
+//          for (int j = 0; j < Tf_.cols; j++) {
+//            std::cout << Tf_.at<double>(i,j) << "\t";
+//          }
+//          std::cout << std::endl;
+//        }
 
 //        ROS_INFO("Essential Matix:");
 //        for (int i = 0; i < essential_matrix.rows; i++) {
@@ -207,13 +255,13 @@ namespace rplvo {
 //          std::cout << std::endl;
 //        }
 
-//        tf::Matrix3x3 R(
-//          rotation.at<int>(0,0), rotation.at<int>(0,1), rotation.at<int>(0,2),
-//          rotation.at<int>(1,0), rotation.at<int>(1,1), rotation.at<int>(1,2),
-//          rotation.at<int>(2,0), rotation.at<int>(2,1), rotation.at<int>(2,2));
-//        tf::Vector3 T(translation.at<int>(0,0), translation.at<int>(0,1), translation.at<int>(0,2));
-//        tf::Transform delta_transform(R,T);
-//        integrateAndPublish(delta_transform, current_image_header_.stamp);
+        tf::Matrix3x3 R(
+          rotation.at<double>(0,0), rotation.at<double>(0,1), rotation.at<double>(0,2),
+          rotation.at<double>(1,0), rotation.at<double>(1,1), rotation.at<double>(1,2),
+          rotation.at<double>(2,0), rotation.at<double>(2,1), rotation.at<double>(2,2));
+        tf::Vector3 T(translation.at<double>(0,0), translation.at<double>(0,1), translation.at<double>(0,2));
+        tf::Transform delta_transform(R,T);
+        integrateAndPublish(delta_transform, current_image_header_.stamp);
 
         previous_image_ = current_image_.clone();
         previous_features_.clear();

@@ -1,16 +1,16 @@
 # Camera Parameters
 cam_model: Pinhole
-cam_width: 640
-cam_height: 480
-cam_fx: 744.043998
-cam_fy: 743.372287
-cam_cx: 325.387252
-cam_cy: 218.535647
-cam_d0: -0.314025
-cam_d1: 0.116978
-cam_d2: 0.000833
-cam_d3: -0.001095
-image_topic: "/camera_down/image_raw"
+cam_width: 1241
+cam_height: 376
+cam_fx: 718.856
+cam_fy: 718.856
+cam_cx: 607.1928
+cam_cy: 185.2157
+cam_d0: 0.0
+cam_d1: 0.0
+cam_d2: 0.0
+cam_d3: 0.0
+image_topic: "/kitti/camera_color_left/image_rect"
 
 # Frame Parameters
 odom_frame_id: "fcu"
@@ -29,7 +29,7 @@ feature_tracker_max_pyramid_level: 3
 feature_tracker_max_iterations: 30
 feature_tracker_epsilon: 0.001
 feature_tracker_eigen_threshold: 0.0001
-rectify_image: true
+rectify_image: false
 visualize: true
 visualize_frame_tracking: 10
 visualize_color_variety: 50
